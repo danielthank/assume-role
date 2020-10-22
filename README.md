@@ -5,13 +5,13 @@ This tool will request and set temporary credentials in your shell environment v
 On OS X, the best way to get it is to use homebrew:
 
 ```bash
-brew install remind101/formulae/assume-role
+brew install danielthank/tap/assume-role
 ```
 
-If you have a working Go 1.6/1.7 environment:
+If you have a working Go environment:
 
 ```bash
-$ go get -u github.com/remind101/assume-role
+$ go get -u github.com/danielthank/assume-role
 ```
 
 On Windows with PowerShell, you can use [scoop.sh](http://scoop.sh/)
@@ -30,27 +30,29 @@ For example:
 `~/.aws/config`:
 
 ```ini
-[profile usermgt]
-region = us-east-1
+[profile chin.yenru]
+region = ap-northeast-1
+output = json
 
 [profile stage]
 # Stage AWS Account.
-region = us-east-1
-role_arn = arn:aws:iam::1234:role/SuperUser
-source_profile = usermgt
+region = ap-northeast-1
+role_arn = arn:aws:iam::1234:role/DeveloperAdministrator
+mfa_serial = arn:aws:iam::9012:mfa/chin.yenru
+source_profile = chin.yenru
 
 [profile prod]
 # Production AWS Account.
-region = us-east-1
-role_arn = arn:aws:iam::9012:role/SuperUser
-mfa_serial = arn:aws:iam::5678:mfa/eric-holmes
-source_profile = usermgt
+region = ap-northeast-1
+role_arn = arn:aws:iam::5678:role/DeveloperAdministrator
+mfa_serial = arn:aws:iam::9012:mfa/chin.yenru
+source_profile = chin.yenru
 ```
 
 `~/.aws/credentials`:
 
 ```ini
-[usermgt]
+[chin.yenru]
 aws_access_key_id = AKIMYFAKEEXAMPLE
 aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/MYxFAKEYEXAMPLEKEY
 ```
@@ -59,37 +61,22 @@ Reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-roles.html
 
 In this example, we have three AWS Account profiles:
 
- * usermgt
+ * chin.yenru
  * stage
  * prod
 
-Each member of the org has their own IAM user and access/secret key for the `usermgt` AWS Account.
+Each member of the org has their own IAM user and access/secret key for the `chin.yenru` AWS Account.
 The keys are stored in the `~/.aws/credentials` file.
 
-The `stage` and `prod` AWS Accounts have an IAM role named `SuperUser`.
-The `assume-role` tool helps a user authenticate (using their keys) and then assume the privilege of the `SuperUser` role, even across AWS accounts!
+The `stage` and `prod` AWS Accounts have an IAM role named `DeveloperAdministrator`.
+The `assume-role` tool helps a user authenticate (using their keys) and then assume the privilege of the `DeveloperAdministrator` role, even across AWS accounts!
 
 ## Usage
 
-Perform an action as the given IAM role:
+`assume-role` will output the temporary security credentials:
 
 ```bash
-$ assume-role stage aws iam get-user
-```
-
-The `assume-role` tool sets `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN` environment variables and then executes the command provided.
-
-If the role requires MFA, you will be asked for the token first:
-
-```bash
-$ assume-role prod aws iam get-user
-MFA code: 123456
-```
-
-If no command is provided, `assume-role` will output the temporary security credentials:
-
-```bash
-$ assume-role prod
+$ assume-role -r stage
 export AWS_ACCESS_KEY_ID="ASIAI....UOCA"
 export AWS_SECRET_ACCESS_KEY="DuH...G1d"
 export AWS_SESSION_TOKEN="AQ...1BQ=="
@@ -97,6 +84,13 @@ export AWS_SECURITY_TOKEN="AQ...1BQ=="
 export ASSUMED_ROLE="prod"
 # Run this to configure your shell:
 # eval $(assume-role prod)
+```
+
+If the role requires MFA, you will be asked for the token first:
+
+```bash
+$ assume-role -r stage
+MFA code: 123456
 ```
 
 Or windows PowerShell:
@@ -121,6 +115,14 @@ alias assume-role='function(){eval $(command assume-role $@);}'
 function assume-role { eval $( $(which assume-role) $@); }
 ```
 
-## TODO
+Check `assume-role -h` for other usage
+```cmd
+Usage:
+  assume-role [flags]
 
-* [ ] Cache credentials.
+Flags:
+  -d, --duration duration   The duration that the credentials will be valid for (default 1h0m0s)
+  -h, --help                help for assume-role
+  -o, --output string       Output format (default "bash")
+  -r, --role string         Role to be switched to
+```

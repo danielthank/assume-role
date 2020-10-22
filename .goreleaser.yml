@@ -21,6 +21,13 @@ snapshot:
   name_template: "{{ .Tag }}-next"
 release:
   prerelease: auto
+brews:
+  tap:
+    owner: danielthank
+    name: homebrew-tap
+  commit_author:
+    name: Daniel Chin
+    email: danielthank@gmail.com
 changelog:
   sort: asc
   filters:

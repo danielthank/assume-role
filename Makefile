@@ -1,4 +1,4 @@
-.PHONY: test clean bin
+.PHONY: clean
 
 bin/assume-role: *.go
 	go build -o $@ .
@@ -14,6 +14,3 @@ bin/assume-role-Windows.exe: *.go
 
 clean:
 	rm -rf bin/*
-
-test:
-	go test -race $(shell go list ./... | grep -v /vendor/)
